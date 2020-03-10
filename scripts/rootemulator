@@ -1,2 +1,2 @@
 #!/bin/bash
-~/Android/Sdk/emulator/emulator -avd Nexus_6P_API_28 -no-snapshot-load
+~/Android/Sdk/emulator/emulator -avd root -no-snapshot-load
