@@ -73,3 +73,89 @@ We'll first launch the RootBeer demo app on our root enviornment to see which co
 We can see that our enviornment got detected because we have a su binary and modified properties file.
 
 ## Bypassing binary detection
+
+### Binary detection logic
+
+In order to bypass the control, we must see how it works. We can find the code implementation in the RootBeer library
+
+```java
+
+public class RootBeer {
+
+    // ...
+
+    public boolean checkForSuBinary(){
+        return checkForBinary(BINARY_SU);
+    }
+
+    // ...
+
+    public boolean checkForBinary(String filename) {
+        String[] pathsArray = Const.getPaths();
+        boolean result = false;
+
+        for (String path : pathsArray) {
+            String completePath = path + filename;
+            File f = new File(path, filename);
+            boolean fileExists = f.exists();
+            if (fileExists) {
+                QLog.v(completePath + " binary detected!");
+                result = true;
+            }
+        }
+        return result;
+    }
+}
+```
+
+```java
+public final class Const {
+
+        // ...
+
+    public static final String[] suPaths ={
+        "/data/local/",
+        "/data/local/bin/",
+        "/data/local/xbin/",
+        "/sbin/",
+        "/su/bin/",
+        "/system/bin/",
+        "/system/bin/.ext/",
+        "/system/bin/failsafe/",
+        "/system/sd/xbin/",
+        "/system/usr/we-need-root/",
+        "/system/xbin/",
+        "/cache/",
+        "/data/",
+        "/dev/"
+    };
+
+    // ...
+
+    static String[] getPaths(){
+        ArrayList<String> paths = new ArrayList<>(Arrays.asList(suPaths));
+        String sysPaths = System.getenv("PATH");
+
+        // If we can't get the path variable just return the static paths
+        if (sysPaths == null || "".equals(sysPaths)){
+            return paths.toArray(new String[0]);
+        }
+
+        for (String path : sysPaths.split(":")){
+            if (!path.endsWith("/")){
+                path = path + '/';
+            }
+            if (!paths.contains(path)){
+                paths.add(path);
+            }
+        }
+
+        return paths.toArray(new String[0]);
+    }
+
+    // ...
+
+}
+```
+
+The control implementation looks for su 
