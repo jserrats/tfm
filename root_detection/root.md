@@ -155,18 +155,27 @@ And then remount the partitions with
 adb remount
 ```
 
-Now we can move the su binary to another path in order to avoid detection.
+It is important to maintain the `su` permissions and ownerships in order not to break anything
 
 ```console
-generic_x86_64:/system/xbin # mv su hidden/su
+generic_x86_64:/system/xbin # ls -la su
+-rwsr-x--- 1 root shell 11056 2019-04-11 00:54 su
 ```
 
-Now we can call the binary su from its new path in order to become root.
+Now we can rename the su binary in order to avoid detection.
 
 ```console
-generic_x86_64:/ $ /system/xbin/hidden/su
+generic_x86_64:/system/xbin # mv su suu
+```
+
+Now we can call the binary su with its new name in order to become root.
+
+```console
+generic_x86_64:/ $ suu
 generic_x86_64:/ #
 ```
+
+Meanwhile, the control is correctly bypassed
 
 ![](res/2020-03-23-20-45-57.png)
 
