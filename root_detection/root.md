@@ -27,7 +27,12 @@ generic_x86_64:/ # whoami
 root
 ```
 
-We now have a device with full permissions.
+We now have a device with full permissions. To run it from command line type:
+
+```console
+~/Android/Sdk/emulator/emulator -avd root
+```
+
 
 ## Installation of RootBeer
 
@@ -74,46 +79,17 @@ We can see that our enviornment got detected because we have a su binary and mod
 
 ## Bypassing binary detection
 
-### Binary detection logic
+In order to evade the detections we must first understand how we got detected. In the case of RootBeer, the library is open source, so we can directly look up the code.
 
-In order to bypass the control, we must see how it works. We can find the code implementation in the RootBeer library
-
-```java
-
-public class RootBeer {
-
-    // ...
-
-    public boolean checkForSuBinary(){
-        return checkForBinary(BINARY_SU);
-    }
-
-    // ...
-
-    public boolean checkForBinary(String filename) {
-        String[] pathsArray = Const.getPaths();
-        boolean result = false;
-
-        for (String path : pathsArray) {
-            String completePath = path + filename;
-            File f = new File(path, filename);
-            boolean fileExists = f.exists();
-            if (fileExists) {
-                QLog.v(completePath + " binary detected!");
-                result = true;
-            }
-        }
-        return result;
-    }
-}
-```
+Const.java
 
 ```java
-public final class Const {
+public static final String BINARY_SU = "su";
 
-        // ...
+// ...
 
-    public static final String[] suPaths ={
+// These must end with a /
+public static final String[] suPaths ={
         "/data/local/",
         "/data/local/bin/",
         "/data/local/xbin/",
@@ -128,34 +104,70 @@ public final class Const {
         "/cache/",
         "/data/",
         "/dev/"
-    };
+};
+```
 
-    // ...
+RootBeer.java
 
-    static String[] getPaths(){
-        ArrayList<String> paths = new ArrayList<>(Arrays.asList(suPaths));
-        String sysPaths = System.getenv("PATH");
+```java
+public boolean checkForSuBinary(){
+    return checkForBinary(BINARY_SU);
+}
 
-        // If we can't get the path variable just return the static paths
-        if (sysPaths == null || "".equals(sysPaths)){
-            return paths.toArray(new String[0]);
-        }
+//...
 
-        for (String path : sysPaths.split(":")){
-            if (!path.endsWith("/")){
-                path = path + '/';
-            }
-            if (!paths.contains(path)){
-                paths.add(path);
-            }
-        }
+public boolean checkForBinary(String filename) {
 
-        return paths.toArray(new String[0]);
+String[] pathsArray = Const.getPaths();
+
+boolean result = false;
+
+for (String path : pathsArray) {
+    String completePath = path + filename;
+    File f = new File(path, filename);
+    boolean fileExists = f.exists();
+    if (fileExists) {
+        QLog.v(completePath + " binary detected!");
+        result = true;
     }
+}
 
-    // ...
-
+return result;
 }
 ```
 
-The control implementation looks for su 
+As we can see the software looks for a file called `su` in the usual paths where it can be found in a normal installation. To see where we have the binary we can do the following:
+
+```console
+generic_x86_64:/ # which su
+/system/xbin/su
+```
+
+The /system is mounted as read only, so we cannot modify it just yet. In order to do so in an emulator, we must start it with the flag `-writable-system`
+
+```console
+~/Android/Sdk/emulator/emulator -avd root -writable-system
+```
+
+And then remount the partitions with
+
+```console
+adb remount
+```
+
+Now we can move the su binary to another path in order to avoid detection.
+
+```console
+generic_x86_64:/system/xbin # mv su hidden/su
+```
+
+Now we can call the binary su from its new path in order to become root.
+
+```console
+generic_x86_64:/ $ /system/xbin/hidden/su
+generic_x86_64:/ #
+```
+
+![](res/2020-03-23-20-45-57.png)
+
+## Bypassing dangerous properties detection
