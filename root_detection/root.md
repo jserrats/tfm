@@ -180,3 +180,37 @@ Meanwhile, the control is correctly bypassed
 ![](res/2020-03-23-20-45-57.png)
 
 ## Bypassing dangerous properties detection
+
+RootBeer control looks for 2 specific properties and returns True if any of them are set.
+
+```java
+public boolean checkForDangerousProps() {
+
+    final Map<String, String> dangerousProps = new HashMap<>();
+    dangerousProps.put("ro.debuggable", "1");
+    dangerousProps.put("ro.secure", "0");
+
+    boolean result = false;
+
+    String[] lines = propsReader();
+
+    if (lines == null){
+        // Could not read, assume false;
+        return false;
+    }
+
+    for (String line : lines) {
+        for (String key : dangerousProps.keySet()) {
+            if (line.contains(key)) {
+                String badValue = dangerousProps.get(key);
+                badValue = "[" + badValue + "]";
+                if (line.contains(badValue)) {
+                    QLog.v(key + " = " + badValue + " detected!");
+                    result = true;
+                }
+            }
+        }
+    }
+    return result;
+}
+```
