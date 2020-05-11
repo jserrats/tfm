@@ -1,4 +1,4 @@
-# Emulatordetection
+# Emulator detection
 
 In an emulator
 
@@ -18,3 +18,4 @@ The original properties inside the emulator.
 
 ![](res/2020-05-02-18-32-20.png)
 
+![](res/2020-05-04-20-12-23.png)
