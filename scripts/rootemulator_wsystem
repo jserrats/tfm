@@ -1,2 +1,2 @@
 #!/bin/bash
-~/Android/Sdk/emulator/emulator -avd root -no-snapshot-load -writable-system
+~/Android/Sdk/emulator/emulator -avd root3 -no-snapshot-load -writable-system
