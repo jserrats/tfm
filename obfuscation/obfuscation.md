@@ -102,4 +102,23 @@ The first thing we see is the hash of the pinned certificate in a plain string. 
 invoke-virtual {v8, v1, v7}, Ld/g$b;->a(Ljava/lang/String;Ljava/lang/String;)Ld/g$c;
 ```
 
-In this line we can see that 
+In this line we can see that we are invoking the method `a` from the class `d.g`. This line is equivalent to this other one in the source code:
+
+```java
+        CertificatePinner certpin = new CertificatePinner.Builder()
+                .add(hostname, "sha256/eSiyNwaNIbIkI94wfLFmhq8/ATxm30i973pMZ669tZo=")
+                .build();
+```
+
+This method is invoked passing the hash of the certificate, and has the same signature `"java.lang.String","java.lang.String"`, so we can deduce the class CertificatePinner no has the name `d,g`.
+
+If we enumerate classes which package begin with `d.g` and then analyze their signatures to one that matches the method `check(String hostname, List<Certificate> peerCertificates)` we'll find the class we are looking for.
+
+If we look for the implementation of this [CertificatePinner](https://square.github.io/okhttp/3.x/okhttp/okhttp3/CertificatePinner.html#check-java.lang.String-java.util.List-)
+
+>Confirms that at least one of the certificates pinned for hostname is in peerCertificates. Does nothing if there are no certificates pinned for hostname. OkHttp calls this after a successful TLS handshake, but before the connection is used.
+>
+>Throws:
+`SSLPeerUnverifiedException` - if peerCertificates don't match the certificates pinned for hostname.
+
+So in order to bypass this control, we simply have to not execute this function in order to avoid raising any exception.
