@@ -28,7 +28,7 @@ b4 pinning we need to install root CA. Only browsers accept user provided certif
 ### Using burp to perform MitM
 
 With the certificate installed we can configure the emulator to use Burp as a proxy in order to intercept requests. We can see the request appear in burp and in the app without any problem
-
+![](res/2020-06-25-19-02-08.png)
 ![](res/2020-05-23-12-35-11.png)
 ![](res/2020-05-23-12-35-35.png)
 
