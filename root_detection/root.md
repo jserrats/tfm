@@ -1,5 +1,7 @@
 # Root
 
+The root account in a linux environment is the administrator of the device, and has all the permissions. Commercial Android smartphones usually don't allow access easily to this account, since it can be a security risk for the user, as a malicious application could escalate privileges, break the application sandbox and obtain full control of all the information stored and control all the processes running in the phone.
+
 There are several ways to detect root in an Android device. Most of them are implemented in <https://github.com/scottyab/rootbeer>, an open source library mentioned in OWASP's MSTG. We'll base our evasion techniques on the controls implemented in this library.
 
 ## Root environment
@@ -27,12 +29,11 @@ generic_x86_64:/ # whoami
 root
 ```
 
-We now have a device with full permissions. To run it from command line type:
+We now have a device with full permissions. To launch the emulator from command line type:
 
 ```console
-~/Android/Sdk/emulator/emulator -avd root
+~/Android/Sdk/emulator/emulator -avd <name of the avd created before>
 ```
-
 
 ## Installation of RootBeer
 
@@ -49,7 +50,7 @@ Receiving objects: 100% (1779/1779), 2.70 MiB | 2.79 MiB/s, done.
 Resolving deltas: 100% (735/735), done.
 ```
 
-Get into the folder and run `gradlew`
+Get into the folder and run `gradlew`. Here we are installing a debug version for simplicity, but in this case it does not matter. The debug version means that the APK file is signed using a debug key.
 
 ```console
 $ ./gradlew installDebug
@@ -71,13 +72,25 @@ After this we'll have our app installed in the android drawer.
 
 ## Base test
 
-We'll first launch the RootBeer demo app on our root enviornment to see which controls detects.
+We'll first launch the RootBeer demo app on our root environment to see which controls detects.
 
 ![](res/2020-03-10-20-32-53.png)
 
 We can see that our enviornment got detected because we have a su binary and modified properties file.
 
 ## Bypassing binary detection
+
+The su binary is an executable file that allows a normal user to escalate privileges into a root account. For example:
+
+```console
+generic_x86_64:/ $ whoami
+shell
+generic_x86_64:/ $ su
+generic_x86_64:/ # whoami
+root
+```
+
+The presence of this binary is an obvious indicator that the system we are on is rooted.
 
 In order to evade the detections we must first understand how we got detected. In the case of RootBeer, the library is open source, so we can directly look up the code.
 
@@ -143,7 +156,7 @@ generic_x86_64:/ # which su
 /system/xbin/su
 ```
 
-The /system is mounted as read only, so we cannot modify it just yet. In order to do so in an emulator, we must start it with the flag `-writable-system`
+The `/system` path is mounted as read only, so we cannot modify it just yet. In order to do so in an emulator, we must start it with the flag `-writable-system`
 
 ```console
 ~/Android/Sdk/emulator/emulator -avd root -writable-system
@@ -214,3 +227,53 @@ public boolean checkForDangerousProps() {
     return result;
 }
 ```
+
+In oder to avoid the detection by the properties file, the easiest way is to hook the function with Frida. The following Frida script overloads the implementation of the methods `checkForSuBinary` and `propsReader` so both always return `false`. It also prints some useful debug information.
+
+```js
+Java.perform(function () {
+    var classname = "com.scottyab.rootbeer.RootBeer";
+    var classmethod = "checkForSuBinary";
+    var hookclass = Java.use(classname);
+
+    //public boolean checkForSuBinary()
+
+    hookclass.checkForSuBinary.overload().implementation = function () {
+        send("CALLED: " + classname + "." + classmethod + "()");
+        var ret = false;
+
+        var s="";
+        s=s+("\nHOOK: " + classname + "." + classmethod + "()");
+        s=s+"\nIN: "+"";
+        s=s+"\nOUT: "+ret;
+        send(s);
+
+        return ret;
+    };
+});
+
+Java.perform(function () {
+    var classname = "com.scottyab.rootbeer.RootBeer";
+    var classmethod = "propsReader";
+    var hookclass = Java.use(classname);
+
+    //private java.lang.String[] propsReader()
+
+    hookclass.propsReader.overload().implementation = function () {
+        send("CALLED: " + classname + "." + classmethod + "()");
+        var ret = false;
+
+        var s="";
+        s=s+("\nHOOK: " + classname + "." + classmethod + "()");
+        s=s+"\nIN: "+"";
+        s=s+"\nOUT: "+ret;
+        send(s);
+
+        return ret;
+    };
+});
+```
+
+As we can see, when hooking Frida to Rootbeer with the script, all checks return negative, and the app is not able to detect root.
+
+![](res/Screenshot%20from%202020-08-23%2019-10-39.png)
