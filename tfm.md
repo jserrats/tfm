@@ -2,6 +2,8 @@
 
 ## Objectives and environment
 
+Reverse engineering protections are code checks that the developer inserts into the application in order to try to make it more difficult for an attacker (the reverse engineer) to understand how the application works, or to modify its logic. For example, a 
+
 The main objective in this project will be to investigate about reverse engineering protections design and evasion on an Android environment. Since this is a very broad field, I will be investigating a limited number of possible protections, chosen with a popularity and usefulness criteria. It is also important to understand that the reverse engineering field is a constant battle between the developer and the reverse engineer, so it is not possible to describe all the new technologies and evasions developed constantly. Because of this, I will try to describe the basics in order to get a general knowledge of each protection.
 
 ## Work methodology
@@ -38,6 +40,8 @@ I've chosen the following controls to study:
 * emulator check
 * certificate pinning
 * binary obfuscation
+
+These are four of the most usual controls that we can find implemented on applications that deal with sensitive information.
 
 :[root](root_detection/root.md)
 :[emulator](emulator_detection/emulator.md)
