@@ -8,11 +8,11 @@ There are several ways to detect root in an Android device. Most of them are imp
 
 First we need a root environment. We'll use the default [Android emulator](https://developer.android.com/studio/run/emulator)
 
-![](res/2020-03-10-19-52-23.png)
+![](root_detection/res/2020-03-10-19-52-23.png)
 
 Choose a device without Google Play Services installed.
 
-![](res/2020-03-10-19-58-45.png)
+![](root_detection/res/2020-03-10-19-58-45.png)
 
 To obtain a root shell we first must type:
 
@@ -74,7 +74,7 @@ After this we'll have our app installed in the android drawer.
 
 We'll first launch the RootBeer demo app on our root environment to see which controls detects.
 
-![](res/2020-03-10-20-32-53.png)
+![](root_detection/res/2020-03-10-20-32-53.png)
 
 We can see that our enviornment got detected because we have a su binary and modified properties file.
 
@@ -190,7 +190,7 @@ generic_x86_64:/ #
 
 Meanwhile, the control is correctly bypassed
 
-![](res/2020-03-23-20-45-57.png)
+![](root_detection/res/2020-03-23-20-45-57.png)
 
 ## Bypassing dangerous properties detection
 
@@ -276,4 +276,4 @@ Java.perform(function () {
 
 As we can see, when hooking Frida to Rootbeer with the script, all checks return negative, and the app is not able to detect root.
 
-![](res/Screenshot%20from%202020-08-23%2019-10-39.png)
+![](root_detection/res/Screenshot%20from%202020-08-23%2019-10-39.png)
