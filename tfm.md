@@ -36,6 +36,10 @@ The tools used are pretty standard in the Android reversing community.
 
 The emulator allows us to test all the controls in a realistic scenario. The emulator was chosen over a real phone because some experiments require having a rooted phone, which is generally not safe to have on a personal phone that is used daily.
 
+#### Burp Proxy
+
+Burp is a proxy focused on attacking web communications, edit and repeating requests, decoding data, and more.
+
 <div class="page"/>
 
 ## Work accomplished
