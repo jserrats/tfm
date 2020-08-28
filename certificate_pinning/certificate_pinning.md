@@ -10,7 +10,7 @@ In Android there are 2 kinds of certificates, user and system. User certificates
 
 To test the succesfull bypass I have developed a test application (https://github.com/jserrats/certpin) with very simple functionality. It consists of two buttons, both make a HTTPS request to a public API (`https://swapi.dev/api/people/3/`) and displays the returning JSON. One button makes a usual HTTPS request (control)in order to check if the connection is made successfully. This way we can see if  and to see if we are able to intercept and modify the request using Burp. The other one makes a pinned request, with the hash of the certificate of `swapi.dev`.
 
-In the following snippets we can see the diference between a request made without and with pinning.respectively. The full code can be found on the github project.
+In the following snippets we can see the difference between a request made without and with pinning.respectively. The full code can be found on the github project.
 
 `PlainRequestActivity.java`
 
