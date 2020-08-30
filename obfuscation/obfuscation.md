@@ -205,7 +205,50 @@ It is quite clear now that this process has complicated enormously the task of u
 
 ## Find new name for pinner class
 
-The only class names that are not obfuscated are the ones defined in the Android Manifest as activities. We can start there:
+By looking at the decompiled `PinnedRequestActivity.java` class (whose name was not modified because it appears in the Android manifest) we can reach the conclusion that the method `run()` is now renamed to `n()`. The string containing the sha256 of the certificate is a great indicator. A quick solution would be to simply modify this string and replace it with the hash of our certificate, and then repack and resign the application. This approach would not work if the release version was obfuscated with a professional grade tool, such as dexguard, since it does encrypt all plain strings found in code. Because of this, we'll try to find the new name of the class and bypass the pinning using Frida once again.
+
+```java
+public void n() {
+        Set set;
+        int i;
+        ArrayList arrayList = new ArrayList();
+        String str = this.s;
+        String[] strArr = {"sha256/eSiyNwaNIbIkI94wfLFmhq8/ATxm30i973pMZ669tZo="};
+        if (str != null) {
+            for (String str2 : strArr) {
+                arrayList.add(C0160g.f2573b.a(str, str2));
+            }
+            int size = arrayList.size();
+            if (size == 0) {
+                set = k.f2078a;
+            } else if (size != 1) {
+                int size2 = arrayList.size();
+                if (size2 < 3) {
+                    i = size2 + 1;
+                } else {
+                    i = size2 < 1073741824 ? size2 + (size2 / 3) : Integer.MAX_VALUE;
+                }
+                set = new LinkedHashSet(i);
+                g.a(arrayList, set);
+            } else {
+                set = Collections.singleton(arrayList.get(0));
+                e.a((Object) set, "java.util.Collections.singleton(element)");
+            }
+            C0160g gVar = new C0160g(set, null);
+            z.a aVar = new z.a();
+            aVar.u = gVar;
+            z zVar = new z(aVar);
+            C.a aVar2 = new C.a();
+            aVar2.b(this.t);
+            B.a(zVar, aVar2.a(), false).a(new c(this));
+            return;
+        }
+        e.a("pattern");
+        throw null;
+    }
+```
+
+Then we can go to the Dalvik code obtained with Apktool, search for the method `n()` and follow the code flow in order to see where the hash of the certificate ends up.
 
 ```dalvik
 # virtual methods
@@ -257,13 +300,11 @@ The only class names that are not obfuscated are the ones defined in the Android
     //...
 ```
 
-The first thing we see is the hash of the pinned certificate in a plain string. A quick solution would be to simply modify this string and replace it with the hash of our certificate, and then repack and resign the application. This approach would not work if the relase version was obfuscated with a professional grade tool, such as dexguard, since it does encrypt all plain strings found in code. Because of this, we'll try to find the new name of the class and bypass the pinning using Frida once again.
+In this line we can see that we are invoking the method `a` from the class `d.g`. This line is equivalent to this other one in the source code:
 
 ```dalvik
 invoke-virtual {v8, v1, v7}, Ld/g$b;->a(Ljava/lang/String;Ljava/lang/String;)Ld/g$c;
 ```
-
-In this line we can see that we are invoking the method `a` from the class `d.g`. This line is equivalent to this other one in the source code:
 
 ```java
         CertificatePinner certpin = new CertificatePinner.Builder()
@@ -271,7 +312,7 @@ In this line we can see that we are invoking the method `a` from the class `d.g`
                 .build();
 ```
 
-This method is invoked passing the hash of the certificate, and has the same signature `"java.lang.String","java.lang.String"`, so we can deduce the class CertificatePinner no has the name `d,g`.
+This method is invoked passing the hash of the certificate, and has the same signature `"java.lang.String","java.lang.String"`, so we can deduce the class CertificatePinner has the name `d.g`.
 
 If we enumerate classes which package begin with `d.g` and then analyze their signatures to one that matches the method `check(String hostname, List<Certificate> peerCertificates)` we'll find the class we are looking for.
 
@@ -283,3 +324,26 @@ If we look for the implementation of this [CertificatePinner](https://square.git
 `SSLPeerUnverifiedException` - if peerCertificates don't match the certificates pinned for hostname.
 
 So in order to bypass this control, we simply have to not execute this function in order to avoid raising any exception.
+
+The Frida script is exactly the same as the one used in the certificate pinning excercise, but with the modified path and function name.
+
+```javascript
+Java.perform(function () {
+    var classname = "d.g";
+    var classmethod = "a";
+    var hookclass = Java.use(classname);
+
+    hookclass.a.overload("java.lang.String","java.util.List").implementation = function (v0,v1) {
+        send("CALLED: " + classname + "." + classmethod + "()\n");
+
+        var s="";
+        s=s+"HOOK: " + classname + "." + classmethod + "()\n";
+        s=s+"IN: "+eval(v0,v1)+"\n";
+        s=s+"OUT: "+ret+"\n";
+
+        send(s);
+
+        return ret;
+    };
+});
+```

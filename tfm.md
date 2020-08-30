@@ -1,5 +1,9 @@
 # Study of reverse engineering protections on Android applications
 
+## Master in Cybersecurity Management (2019-2020)
+
+Jaume Serrats
+
 <div class="page"/>
 
 ## Objectives and environment
@@ -18,7 +22,7 @@ For each of the chosen protections, i have:
 * Investigated a way to bypass said protection.
 * Investigate on future improvements or alternative protections that could mitigate or prevent the bypass.
 
-This scenario is not fully realistic, since an attacker in a real world scenario would not know the implementation of the control, making it more difficult. Nonetheless, since this is an educational project i consider this to be a good start.
+This scenario is not fully realistic, since an attacker in a real world scenario would not know the implementation of the control, making it more difficult. Nonetheless, since this is an educational project I consider this to be a good start.
 
 ### Tools
 
@@ -26,11 +30,11 @@ The tools used are pretty standard in the Android reversing community.
 
 #### Frida Dynamic instrumentation toolkit
 
-[Frida](https://frida.re/) is a very popular and powerful tool that allows us to hook into processes, modifying its flow and logic on the fly without the need to modify low-level code, or restart the application. This is very powerful when evading reverse engineering controls, Since they are often obfuscated and difficult to analyze statically.
+**Frida** is a very popular and powerful tool that allows us to hook into processes, modifying its flow and logic on the fly without the need to modify low-level code, or restart the application. This is very powerful when evading reverse engineering controls, Since they are often obfuscated and difficult to analyze statically.
 
 #### Runtime Mobile Security (RMS)
 
-[RMS](https://github.com/m0bilesecurity/RMS-Runtime-Mobile-Security) is a Frida web interface that makes workflow much easier and quick.
+**RMS** is a Frida web interface that makes workflow much quick and easier.
 
 #### Android emulator from Android SDK
 
@@ -38,7 +42,15 @@ The emulator allows us to test all the controls in a realistic scenario. The emu
 
 #### Burp Proxy
 
-Burp is a proxy focused on attacking web communications, edit and repeating requests, decoding data, and more.
+**Burp** is a proxy focused on attacking web communications, edit and repeating requests, decoding data, and more.
+
+#### Android Debugger Bridge (ADB)
+
+**ADB** is a versatile command-line tool that lets you communicate with a device. The adb command facilitates a variety of device actions, such as installing and debugging apps, and it provides access to a Unix shell that you can use to run a variety of commands on a device
+
+#### Apktool
+
+**Apktool** is a tool for reverse engineering 3rd party, closed, binary Android apps. It can decode resources to nearly original form and rebuild them after making some modifications. It also makes working with an app easier because of the project like file structure and automation of some repetitive tasks like building apk, etc.
 
 <div class="page"/>
 
@@ -73,10 +85,23 @@ These are four of the most usual controls that we can find implemented on applic
 
 ## Results
 
-afbaegg
+Through the course of this project I have learnt a great amount about the basics of application security development on Android. While the level of insight achieved on this project it is not enough to be applied to critical applications that deal with sensible information, I think it sets a foundation on how this subject works, and it can be easily expanded from here.
+
+As a result I have also published this document on github hoping it can be useful to any developer  or analyst assessing the security of an application.
 
 <div class="page"/>
 
 ## Conclusions
 
-afeagagea
+Reverse engineer protections are a race against the attacker's time and resources. Ultimately, the attacker always given infinite resources. The objective here is to make it difficult enough so it is not worth it for the attacker spend time reversing this application. Also new technologies, controls and evasions appear every day, so it is also important to keep the protections updated and follow the news on the latest technologies.
+
+Future work could try to include other protections such as integrity check, hooking detection or others, or try to evade more advanced protections.
+
+<div class="page"/>
+
+## Bibliography
+
+* OWASP Mobile Security Testing Guide (MSTG) - https://github.com/OWASP/owasp-mstg
+* OWASP Mobile Application Security Verification Standard (MASVS) - https://github.com/OWASP/owasp-masvs
+* Decompiling Android - Godfrey Nolan
+* Android Security Internals - Nikolay Elenkov
