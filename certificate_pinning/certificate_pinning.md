@@ -58,7 +58,7 @@ In the following steps i describe a way that I have particularly found to instal
     1. Launch the emulator with the flag `-writable-system`
     2. Then obtain root on the system with `adb root`
     3. Then remount the `/system` partition as writeable with `adb remount`
-    4. Test that the partition was mounted succesfully with `touch /system/test.txt`
+    4. Test that the partition was mounted successfully with `touch /system/test.txt`
 
 2. Obtain the Root CA from burp
    1. Obtain the Burp Root certificate. Enter `http://burp` into a browser configured with burp and download the CA file.
